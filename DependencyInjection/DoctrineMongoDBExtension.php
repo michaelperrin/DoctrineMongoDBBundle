@@ -3,7 +3,8 @@
 
 namespace Doctrine\Bundle\MongoDBBundle\DependencyInjection;
 
-use DoctrineMongoDBBundle\DoctrineMongoDBBundle\Repository\ServiceDocumentRepositoryInterface;
+use Doctrine\Bundle\MongoDBBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepositoryInterface;
 use Symfony\Bridge\Doctrine\DependencyInjection\AbstractDoctrineExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Alias;
@@ -11,7 +12,6 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;

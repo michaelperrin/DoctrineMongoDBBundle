@@ -12,7 +12,7 @@
  * file that was distributed with this source code.
  */
 
-namespace DoctrineMongoDBBundle\DoctrineMongoDBBundle\Repository;
+namespace Doctrine\Bundle\MongoDBBundle\Repository;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentRepository;
@@ -43,6 +43,6 @@ class ServiceDocumentRepository extends DocumentRepository implements ServiceDoc
     {
         $manager = $registry->getManagerForClass($documentClass);
 
-        parent::__construct($manager, $manager->getClassMetadata($documentClass));
+        parent::__construct($manager, $manager->getUnitOfWork(), $manager->getClassMetadata($documentClass));
     }
 }

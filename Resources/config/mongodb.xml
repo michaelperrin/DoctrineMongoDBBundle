@@ -58,6 +58,7 @@
         <service id="doctrine_mongodb.odm.cache" alias="doctrine_mongodb.odm.cache.array" />
         <service id="%doctrine_mongodb.odm.document_manager.class%" alias="doctrine_mongodb.odm.document_manager" public="false" />
         <service id="%doctrine_mongodb.odm.class%" alias="doctrine_mongodb" public="false" />
+        <service id="Doctrine\Common\Persistence\ManagerRegistry" alias="doctrine_mongodb" public="false" />
 
         <service id="Doctrine\Bundle\MongoDBBundle\Command\ClearMetadataCacheDoctrineODMCommand" class="Doctrine\Bundle\MongoDBBundle\Command\ClearMetadataCacheDoctrineODMCommand">
             <tag name="console.command"/>

@@ -1,10 +1,13 @@
 <?php
 
-namespace Doctrine\Bundle\DoctrineBundle\Tests\Repository;
+namespace Doctrine\Bundle\MongoDBBundle\Tests\Repository;
 
-use DoctrineMongoDBBundle\DoctrineMongoDBBundle\Repository\ServiceDocumentRepositoryInterface;
 use Doctrine\Bundle\MongoDBBundle\Repository\ContainerRepositoryFactory;
-use Doctrine\MongoDB\Configuration;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepositoryInterface;
+use Doctrine\Bundle\MongoDBBundle\Tests\Fixtures\Foo\BoringDocument;
+use Doctrine\Bundle\MongoDBBundle\Tests\Fixtures\Foo\CoolDocument;
+use Doctrine\MongoDB\Connection;
+use Doctrine\ODM\MongoDB\DocumentManager as BaseDocumentManager;
 use Doctrine\ODM\MongoDB\DocumentRepository;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use PHPUnit\Framework\TestCase;
@@ -19,15 +22,16 @@ class ContainerRepositoryFactoryTest extends TestCase
         }
 
         $dm = $this->createTestDocumentManager([
-            'Foo\CoolDocument' => 'my_repo',
+            CoolDocument::class => 'my_repo',
         ]);
-        $repo = new StubRepository($dm, new ClassMetadata(''));
+
+        $repo = new StubRepository($dm, $dm->getUnitOfWork(), new ClassMetadata(CoolDocument::class));
         $container = $this->createContainer([
             'my_repo' => $repo,
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
-        $this->assertSame($repo, $factory->getRepository($dm, 'Foo\CoolDocument'));
+        $this->assertSame($repo, $factory->getRepository($dm, CoolDocument::class));
     }
 
     public function testGetRepositoryReturnsDocumentRepository()
@@ -38,14 +42,14 @@ class ContainerRepositoryFactoryTest extends TestCase
 
         $container = $this->createContainer([]);
         $dm = $this->createTestDocumentManager([
-            'Foo\BoringDocument' => null,
+            BoringDocument::class => null,
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
-        $actualRepo = $factory->getRepository($dm, 'Foo\BoringDocument');
+        $actualRepo = $factory->getRepository($dm, BoringDocument::class);
         $this->assertInstanceOf(DocumentRepository::class, $actualRepo);
         // test the same instance is returned
-        $this->assertSame($actualRepo, $factory->getRepository($dm, 'Foo\BoringDocument'));
+        $this->assertSame($actualRepo, $factory->getRepository($dm, BoringDocument::class));
     }
 
     public function testCustomRepositoryIsReturned()
@@ -56,14 +60,14 @@ class ContainerRepositoryFactoryTest extends TestCase
 
         $container = $this->createContainer([]);
         $dm = $this->createTestDocumentManager([
-            'Foo\CustomNormalRepoDocument' => StubRepository::class,
+            CoolDocument::class => StubRepository::class,
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
-        $actualRepo = $factory->getRepository($dm, 'Foo\CustomNormalRepoDocument');
+        $actualRepo = $factory->getRepository($dm, CoolDocument::class);
         $this->assertInstanceOf(StubRepository::class, $actualRepo);
         // test the same instance is returned
-        $this->assertSame($actualRepo, $factory->getRepository($dm, 'Foo\CustomNormalRepoDocument'));
+        $this->assertSame($actualRepo, $factory->getRepository($dm, CoolDocument::class));
     }
 
     /**
@@ -83,16 +87,16 @@ class ContainerRepositoryFactoryTest extends TestCase
         ]);
 
         $dm = $this->createTestDocumentManager([
-            'Foo\CoolDocument' => 'my_repo',
+            CoolDocument::class => 'my_repo',
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
-        $factory->getRepository($dm, 'Foo\CoolDocument');
+        $factory->getRepository($dm, CoolDocument::class);
     }
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage The "Doctrine\Bundle\DoctrineBundle\Tests\Repository\StubServiceRepository" entity repository implements "Doctrine\Bundle\DoctrineBundle\Repository\ServiceDocumentRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
+     * @expectedExceptionMessage The "Doctrine\Bundle\MongoDBBundle\Tests\Repository\StubServiceRepository" document repository implements "Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepositoryInterface", but its service could not be found. Make sure the service exists and is tagged with "doctrine.repository_service".
      */
     public function testRepositoryMatchesServiceInterfaceButServiceNotFound()
     {
@@ -103,16 +107,16 @@ class ContainerRepositoryFactoryTest extends TestCase
         $container = $this->createContainer([]);
 
         $dm = $this->createTestDocumentManager([
-            'Foo\CoolDocument' => StubServiceRepository::class,
+            CoolDocument::class => StubServiceRepository::class,
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
-        $factory->getRepository($dm, 'Foo\CoolDocument');
+        $factory->getRepository($dm, CoolDocument::class);
     }
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage The "Foo\CoolDocument" entity has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
+     * @expectedExceptionMessage The "Doctrine\Bundle\MongoDBBundle\Tests\Fixtures\Foo\CoolDocument" document has a repositoryClass set to "not_a_real_class", but this is not a valid class. Check your class naming. If this is meant to be a service id, make sure this service exists and is tagged with "doctrine.repository_service".
      */
     public function testCustomRepositoryIsNotAValidClass()
     {
@@ -124,11 +128,11 @@ class ContainerRepositoryFactoryTest extends TestCase
         }
 
         $dm = $this->createTestDocumentManager([
-            'Foo\CoolDocument' => 'not_a_real_class',
+            CoolDocument::class => 'not_a_real_class',
         ]);
 
         $factory = new ContainerRepositoryFactory($container);
-        $factory->getRepository($dm, 'Foo\CoolDocument');
+        $factory->getRepository($dm, CoolDocument::class);
     }
 
     private function createContainer(array $services)
@@ -148,27 +152,22 @@ class ContainerRepositoryFactoryTest extends TestCase
         return $container;
     }
 
-    private function createTestDocumentManager(array $DocumentRepositoryClasses)
+    private function createTestDocumentManager(array $documentRepositoryClasses)
     {
-        $classMetadatas = [];
-        foreach ($DocumentRepositoryClasses as $entityClass => $DocumentRepositoryClass) {
+        $config = new \Doctrine\ODM\MongoDB\Configuration();
+        $config->setHydratorDir(\sys_get_temp_dir());
+        $config->setHydratorNamespace('SymfonyTests\Doctrine');
+        $config->setProxyDir(\sys_get_temp_dir());
+        $config->setProxyNamespace('SymfonyTests\Doctrine');
+
+        $dm = DocumentManager::create(new Connection(), $config);
+
+        foreach ($documentRepositoryClasses as $entityClass => $DocumentRepositoryClass) {
             $metadata = new ClassMetadata($entityClass);
             $metadata->customRepositoryClassName = $DocumentRepositoryClass;
 
-            $classMetadatas[$entityClass] = $metadata;
+            $dm->setClassMetadata($entityClass, $metadata);
         }
-
-        // TODO
-        $dm = $this->getMockBuilder(DocumentManagerInterface::class)->getMock();
-        $dm->expects($this->any())
-            ->method('getClassMetadata')
-            ->willReturnCallback(function ($class) use ($classMetadatas) {
-                return $classMetadatas[$class];
-            });
-
-        $dm->expects($this->any())
-            ->method('getConfiguration')
-            ->willReturn(new Configuration());
 
         return $dm;
     }
@@ -180,4 +179,21 @@ class StubRepository extends DocumentRepository
 
 class StubServiceRepository extends DocumentRepository implements ServiceDocumentRepositoryInterface
 {
+}
+
+class DocumentManager extends BaseDocumentManager {
+    protected $classMetadatas = array();
+
+    public function setClassMetadata($className, ClassMetadata $class)
+    {
+        $this->classMetadatas[$className] = $class;
+    }
+
+    public function getClassMetadata($className)
+    {
+        if ( ! isset($this->classMetadatas[$className])) {
+            throw new \InvalidArgumentException('Metadata for class ' . $className . ' doesn\'t exist, try calling ->setClassMetadata() first');
+        }
+        return $this->classMetadatas[$className];
+    }
 }

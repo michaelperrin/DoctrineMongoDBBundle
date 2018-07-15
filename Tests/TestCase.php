@@ -3,11 +3,15 @@
 
 namespace Doctrine\Bundle\MongoDBBundle\Tests;
 
+use Doctrine\Bundle\MongoDBBundle\DependencyInjection\DoctrineMongoDBExtension;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\MongoDB\Connection;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class TestCase extends BaseTestCase
 {

@@ -14,7 +14,7 @@
 
 namespace Doctrine\Bundle\MongoDBBundle\Repository;
 
-use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
+use Doctrine\Bundle\MongoDBBundle\DependencyInjection\Compiler\ServiceRepositoryCompilerPass;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\DocumentRepository;
 use Doctrine\ODM\MongoDB\Repository\RepositoryFactory;
@@ -94,6 +94,6 @@ final class ContainerRepositoryFactory implements RepositoryFactory
 
         $repositoryClassName = $metadata->customRepositoryClassName ?: $documentManager->getConfiguration()->getDefaultRepositoryClassName();
 
-        return $this->managedRepositories[$repositoryHash] = new $repositoryClassName($documentManager, $metadata);
+        return $this->managedRepositories[$repositoryHash] = new $repositoryClassName($documentManager, $documentManager->getUnitOfWork(), $metadata);
     }
 }

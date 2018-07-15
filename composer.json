@@ -34,7 +34,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Doctrine\\Bundle\\MongoDBBundle\\": ""
+            "Doctrine\\Bundle\\MongoDBBundle\\": "",
+            "": "Tests/DependencyInjection"
         }
     },
     "extra": {

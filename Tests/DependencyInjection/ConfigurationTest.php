@@ -17,7 +17,7 @@ class ConfigurationTest extends TestCase
     public function testDefaults()
     {
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $options = $processor->processConfiguration($configuration, []);
 
         $defaults = [
@@ -47,13 +47,13 @@ class ConfigurationTest extends TestCase
     public function testFullConfiguration($config)
     {
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $options = $processor->processConfiguration($configuration, [$config]);
 
         $expected = [
             'fixture_loader'                 => ContainerAwareLoader::class,
-            'auto_generate_hydrator_classes' => true,
-            'auto_generate_proxy_classes'    => true,
+            'auto_generate_hydrator_classes' => ODMConfiguration::AUTOGENERATE_ALWAYS,
+            'auto_generate_proxy_classes'    => ODMConfiguration::AUTOGENERATE_ALWAYS,
             'auto_generate_persistent_collection_classes' => ODMConfiguration::AUTOGENERATE_EVAL,
             'default_connection'             => 'conn1',
             'default_database'               => 'default_db_name',
@@ -214,7 +214,7 @@ class ConfigurationTest extends TestCase
     public function testMergeOptions(array $configs, array $expected)
     {
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $options = $processor->processConfiguration($configuration, $configs);
 
         foreach ($expected as $key => $value) {
@@ -266,7 +266,7 @@ class ConfigurationTest extends TestCase
                 ['document_managers' => ['default' => ['mappings' => ['foomap' => ['type' => 'val1'], 'barmap' => ['dir' => 'val2']]]]],
                 ['document_managers' => ['default' => ['mappings' => ['barmap' => ['prefix' => 'val3']]]]],
             ],
-            ['document_managers' => ['default' => ['metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => null, 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => ['foomap' => ['type' => 'val1', 'mapping' => true], 'barmap' => ['prefix' => 'val3', 'mapping' => true]], 'retry_connect' => 0, 'retry_query' => 0]]],
+            ['document_managers' => ['default' => ['metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => 'doctrine_mongodb.odm.container_repository_factory', 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => ['foomap' => ['type' => 'val1', 'mapping' => true], 'barmap' => ['prefix' => 'val3', 'mapping' => true]], 'retry_connect' => 0, 'retry_query' => 0]]],
         ];
 
         // connections are merged non-recursively.
@@ -310,8 +310,8 @@ class ConfigurationTest extends TestCase
                 ['document_managers' => ['bardm' => ['database' => 'val3']]],
             ],
             ['document_managers' => [
-                'foodm' => ['database' => 'val1', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => null, 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
-                'bardm' => ['database' => 'val3', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => null, 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
+                'foodm' => ['database' => 'val1', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => 'doctrine_mongodb.odm.container_repository_factory', 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
+                'bardm' => ['database' => 'val3', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => 'doctrine_mongodb.odm.container_repository_factory', 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
             ]],
         ];
 
@@ -326,7 +326,7 @@ class ConfigurationTest extends TestCase
     public function testNormalizeOptions(array $config, array $expected)
     {
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $options = $processor->processConfiguration($configuration, [$config]);
 
         foreach ($expected as $key => $value) {
@@ -357,8 +357,8 @@ class ConfigurationTest extends TestCase
                 ['connection' => 'conn2', 'id' => 'bar'],
             ]],
             ['document_managers' => [
-                'foo' => ['connection' => 'conn1', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' => 'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => null, 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
-                'bar' => ['connection' => 'conn2', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => null, 'persistent_collection_factory' => null,'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
+                'foo' => ['connection' => 'conn1', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' => 'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => 'doctrine_mongodb.odm.container_repository_factory', 'persistent_collection_factory' => null, 'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
+                'bar' => ['connection' => 'conn2', 'metadata_cache_driver' => ['type' => 'array'], 'logging' => '%kernel.debug%', 'profiler' => ['enabled' => '%kernel.debug%', 'pretty' => '%kernel.debug%'], 'auto_mapping' => false, 'default_repository_class' =>  'Doctrine\ODM\MongoDB\DocumentRepository', 'repository_factory' => 'doctrine_mongodb.odm.container_repository_factory', 'persistent_collection_factory' => null,'filters' => [], 'mappings' => [], 'retry_connect' => 0, 'retry_query' => 0],
             ]],
         ];
 
@@ -374,7 +374,7 @@ class ConfigurationTest extends TestCase
                     'connection'   => 'conn1',
                     'metadata_cache_driver' => ['type' => 'array'],
                     'default_repository_class' =>  DocumentRepository::class,
-                    'repository_factory' => null,
+                    'repository_factory' => 'doctrine_mongodb.odm.container_repository_factory',
                     'persistent_collection_factory' => null,
                     'mappings'     => ['foo-mapping' => ['type' => 'xml', 'mapping' => true]],
                     'logging'      => '%kernel.debug%',
@@ -419,7 +419,7 @@ class ConfigurationTest extends TestCase
         ];
 
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $options = $processor->processConfiguration($configuration, [$config]);
 
         $this->assertEquals(['password' => 'bar'], $options['connections']['conn1']['options']);
@@ -445,7 +445,7 @@ class ConfigurationTest extends TestCase
         ];
 
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $processor->processConfiguration($configuration, [$config]);
     }
 
@@ -463,7 +463,7 @@ class ConfigurationTest extends TestCase
         ];
 
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $processedConfig = $processor->processConfiguration($configuration, [$config]);
         $this->assertFalse(array_key_exists('replicaSet', $processedConfig['connections']['conn1']['options']));
     }
@@ -474,7 +474,7 @@ class ConfigurationTest extends TestCase
     public function testFixtureLoaderValidation($config)
     {
         $processor = new Processor();
-        $configuration = new Configuration(false);
+        $configuration = new Configuration();
         $this->expectException(\LogicException::class);
         $processor->processConfiguration($configuration, [$config]);
     }
