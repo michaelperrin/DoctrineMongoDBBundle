@@ -43,7 +43,7 @@ doctrine_mongodb:
                 slaveOkay:        true
                 socketTimeoutMS:  1000
                 ssl:              true
-                authMechanism:    X509
+                authMechanism:    MONGODB-X509
                 username:         username_val
                 w:                majority
                 wTimeoutMS:       1000
@@ -60,7 +60,7 @@ doctrine_mongodb:
             mappings:
                 FooBundle:   annotation
             metadata_cache_driver:
-                type:                  memcache
+                type:                  memcached
                 class:                 fooClass
                 host:                  host_val
                 port:                  1234

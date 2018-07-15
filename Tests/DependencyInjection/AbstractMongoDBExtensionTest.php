@@ -1,16 +1,5 @@
 <?php
 
-/*
- * This file is part of the Doctrine MongoDBBundle
- *
- * The code was originally distributed inside the Symfony framework.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- * (c) Doctrine Project
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Doctrine\Bundle\MongoDBBundle\Tests\DependencyInjection;
 
@@ -22,6 +11,7 @@ use Doctrine\Bundle\MongoDBBundle\Tests\TestCase;
 use Doctrine\Common\Cache\ApcCache;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\MemcacheCache;
+use Doctrine\Common\Cache\MemcachedCache;
 use Doctrine\Common\Cache\XcacheCache;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\MongoDB\Connection;
@@ -359,7 +349,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $this->assertEquals('%doctrine_mongodb.odm.cache.apc.class%', $definition->getClass());
     }
 
-    public function testDocumentManagerMemcacheMetadataCacheDriverConfiguration()
+    public function testDocumentManagerMemcachedMetadataCacheDriverConfiguration()
     {
         $container = $this->getContainer();
         $loader = new DoctrineMongoDBExtension();
@@ -372,17 +362,17 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $container->compile();
 
         $definition = $container->getDefinition('doctrine_mongodb.odm.default_metadata_cache');
-        $this->assertEquals(MemcacheCache::class, $definition->getClass());
+        $this->assertEquals(MemcachedCache::class, $definition->getClass());
 
         $calls = $definition->getMethodCalls();
-        $this->assertEquals('setMemcache', $calls[0][0]);
-        $this->assertEquals('doctrine_mongodb.odm.default_memcache_instance', (string) $calls[0][1][0]);
+        $this->assertEquals('setMemcached', $calls[0][0]);
+        $this->assertEquals('doctrine_mongodb.odm.default_memcached_instance', (string) $calls[0][1][0]);
 
-        $definition = $container->getDefinition('doctrine_mongodb.odm.default_memcache_instance');
-        $this->assertEquals('Memcache', $definition->getClass());
+        $definition = $container->getDefinition('doctrine_mongodb.odm.default_memcached_instance');
+        $this->assertEquals('Memcached', $definition->getClass());
 
         $calls = $definition->getMethodCalls();
-        $this->assertEquals('connect', $calls[0][0]);
+        $this->assertEquals('addServer', $calls[0][0]);
         $this->assertEquals('localhost', $calls[0][1][0]);
         $this->assertEquals(11211, $calls[0][1][1]);
     }

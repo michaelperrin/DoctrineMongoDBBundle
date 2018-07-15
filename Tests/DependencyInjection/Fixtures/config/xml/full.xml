@@ -44,7 +44,7 @@
                 slaveOkay="true"
                 socketTimeoutMS="1000"
                 ssl="true"
-                authMechanism="X509"
+                authMechanism="MONGODB-X509"
                 username="username_val"
                 w="majority"
                 wTimeoutMS="1000"
@@ -67,7 +67,7 @@
 
         <doctrine:document-manager id="dm1">
             <doctrine:mapping name="FooBundle" type="annotation" />
-            <doctrine:metadata-cache-driver type="memcache">
+            <doctrine:metadata-cache-driver type="memcached">
                 <doctrine:class>fooClass</doctrine:class>
                 <doctrine:host>host_val</doctrine:host>
                 <doctrine:port>1234</doctrine:port>

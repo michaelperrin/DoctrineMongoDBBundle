@@ -1,16 +1,5 @@
 <?php
 
-/*
- * This file is part of the Doctrine MongoDBBundle
- *
- * The code was originally distributed inside the Symfony framework.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- * (c) Doctrine Project
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Doctrine\Bundle\MongoDBBundle\Form;
 
@@ -28,7 +17,6 @@ use Symfony\Component\Form\FormTypeGuesserInterface;
 use Symfony\Component\Form\Guess\Guess;
 use Symfony\Component\Form\Guess\TypeGuess;
 use Symfony\Component\Form\Guess\ValueGuess;
-use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Tries to guess form types according to ODM mappings
@@ -55,10 +43,14 @@ class DoctrineMongoDBTypeGuesser implements FormTypeGuesserInterface
     public function guessType($class, $property)
     {
         if (!$ret = $this->getMetadata($class)) {
-            return new TypeGuess($this->typeFQCN ? TextType::class : 'text', [], Guess::LOW_CONFIDENCE);
+            return;
         }
 
         list($metadata, $name) = $ret;
+
+        if (! $metadata->hasField($property)) {
+            return;
+        }
 
         if ($metadata->hasAssociation($property)) {
             $multiple = $metadata->isCollectionValuedAssociation($property);

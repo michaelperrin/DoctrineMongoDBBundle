@@ -1,16 +1,5 @@
 <?php
 
-/*
- * This file is part of the Doctrine MongoDBBundle
- *
- * The code was originally distributed inside the Symfony framework.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- * (c) Doctrine Project
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Doctrine\Bundle\MongoDBBundle\Tests\DependencyInjection;
 
@@ -102,7 +91,7 @@ class ConfigurationTest extends TestCase
                         'slaveOkay'         => true,
                         'socketTimeoutMS'   => 1000,
                         'ssl'               => true,
-                        'authMechanism'     => 'X509',
+                        'authMechanism'     => 'MONGODB-X509',
                         'authSource'        => 'some_db',
                         'username'          => 'username_val',
                         'w'                 => 'majority',
@@ -146,7 +135,7 @@ class ConfigurationTest extends TestCase
                         ],
                     ],
                     'metadata_cache_driver' => [
-                        'type'           => 'memcache',
+                        'type'           => 'memcached',
                         'class'          => 'fooClass',
                         'host'           => 'host_val',
                         'port'           => 1234,
